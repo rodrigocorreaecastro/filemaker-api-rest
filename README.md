@@ -35,10 +35,6 @@ use airmoi\FileMaker\FileMaker;
 $fm = new FileMaker($database, $host, $username, $password, $options);
 ```
 
-PASSO 3: Use-o da mesma maneira que usaria a API oficial...
-
-...E aproveite a conclusão de código usando seu IDE favorito e suporte a php 7 sem aviso prévio.
-
 
 ### Exemplo de código de demonstração
 
