@@ -2,67 +2,148 @@
 FileMaker API Rest PHP
 
 
-## Installation
+## Instalação
 
-### Using Composer
-You can use the `composer` package manager to install. Either run:
+### Usando o Composer
+Você pode usar o gerenciador de pacotes `composer` para instalar. Ou execute:
 
     $ php composer.phar require airmoi/filemaker "*"
 
-or add:
+ou adicione:
 
     "airmoi/filemaker": "^2.2"
 
-to your composer.json file
+para seu arquivo composer.json
 
-### Manual Install
+### Instalação manual
 
-You can also manually install the API easily to your project. Just download the source [ZIP](https://github.com/airmoi/FileMaker/archive/master.zip) and extract its content into your project.
+Você também pode instalar manualmente a API em seu projeto. Basta baixar a fonte [ZIP](https://github.com/airmoi/FileMaker/archive/master.zip) e extrair seu conteúdo em seu projeto.
 
-## Usage
+## Uso
 
-STEP 1 : Read the 'Important Notice' below
-
-STEP 2 : include the API autoload
+PASSO 1: Inclua o carregamento automático da API
 
 ```php
 require '/path/to/autoloader.php';
 ```
-*This step is facultative if you are using composer*
+*Esta etapa é facultativa se você estiver usando o compositor*
 
-STEP 3 : Create a FileMaker instance
+STEP 2 : Criar uma instância do FileMaker
 ```php
 use airmoi\FileMaker\FileMaker;
 
 $fm = new FileMaker($database, $host, $username, $password, $options);
 ```
 
-STEP 4 : use it quite the same way you would use the offical API...
+PASSO 3: Use-o da mesma maneira que usaria a API oficial...
 
-...And enjoy code completion using your favorite IDE and php 7 support without notice/warnings.
+...E aproveite a conclusão de código usando seu IDE favorito e suporte a php 7 sem aviso prévio.
 
-You may also find sample usage by reading the `sample.php` file located in the "demo" folder 
 
-### Sample demo code
+### Exemplo de código de demonstração
 
 ```php
+<?php
+header('Content-Type: application/json; charset=utf-8');
+
+$data = [];
+
+
 use airmoi\FileMaker\FileMaker;
 use airmoi\FileMaker\FileMakerException;
+use airmoi\FileMaker\FileMakerValidationException;
+
 
 require('/path/to/autoloader.php');
 
-$fm = new FileMaker('database', 'localhost', 'filemaker', 'filemaker', ['prevalidate' => true]);
+
+$fm = new FileMaker('database', 'localhost', 'userFilemaker', 'pwdFilemaker', ['prevalidate' => true]);
+
 
 try {
-    $command = $fm->newFindCommand('layout_name');
-    $records = $command->execute()->getRecords(); 
-    
-    foreach($records as $record) {
-        echo $record->getField('fieldname');
-        ...
-    }
-} 
-catch (FileMakerException $e) {
-    echo 'An error occured ' . $e->getMessage() . ' - Code : ' . $e->getCode();
+
+    $layout_selected = 'pacotes_online';
+    $data['config']['layout'] = $layout_selected;
+
+    $findCommand = $fm->newFindCommand($layout_selected);
+
+    $id = (isset($_GET['id'])) ? $_GET['id'] : null; // '81309...81357' OR 81309
+    if ($id):
+        $findCommand->addFindCriterion('id_cadastro_pacotes', $id);
+    endif;
+
+    $nome = (isset($_GET['nome']))?$_GET['nome']:null; //'nome'
+    if ($nome):
+        $findCommand->addFindCriterion('nome', $nome);
+    endif;
+
+    $situacao = (isset($_GET['situacao']))?$_GET['situacao']:null; // 'Ativo' OR 'Inativo'
+    if ($situacao):
+        $findCommand->addFindCriterion('situacao', $situacao);
+    endif;
+
+    $codigo_pacote = (isset($_GET['codigo_pacote']))?$_GET['codigo_pacote']:null;
+    if ($codigo_pacote):
+        $findCommand->addFindCriterion('codigo_pacote', $codigo_pacote);
+    endif;
+
+
+    try {
+        $records = $findCommand->execute()->getRecords();
+
+        $data['config']['registros'] = count($records);
+
+        foreach($records as $record):
+            $data["codigo_pacote_digital"] = trim( $record->getField('codigo_pacote_digital') );
+            $data["valor_comissao_para_venda"] = trim( $record->getField('valor_comissao_para_venda') );
+            $data["pacote_minimo"] = trim( $record->getField('pacote_minimo') );
+            $data["autenticacao"] = trim( $record->getField('autenticacao') );
+            $data["id_produto"] = trim( $record->getField('id_produto') );
+            $data["nome"] = trim( $record->getField('nome') );
+            $data["valor_pacote"] = trim( $record->getField('valor_pacote') );
+            $data["pf_pj"] = trim( $record->getField('pf_pj') );
+            $data["analogico_digital"] = trim( $record->getField('analogico_digital') );
+            $data["situacao"] = trim( $record->getField('situacao') );
+            $data["obs"] = trim( $record->getField('obs') );
+            $data["id_cadastro_pacotes"] = trim( $record->getField('id_cadastro_pacotes') );
+            $data["upload"] = trim( $record->getField('upload') );
+            $data["desconto"] = trim( $record->getField('desconto') );
+            $data["cidade"] = trim( $record->getField('cidade') );
+            $data["grupo_pacotes"] = trim( $record->getField('grupo_pacotes') );
+            $data["pacote_referencia"] = trim( $record->getField('pacote_referencia') );
+            $data["desconto_pagamento_local"] = trim( $record->getField('desconto_pagamento_local') );
+            $data["desconto_fatura_digital"] = trim( $record->getField('desconto_fatura_digital') );
+            $data["desconto_cartao_credito"] = trim( $record->getField('desconto_cartao_credito') );
+        endforeach;
+
+        $fm->endProfile('IrG6U+Rx0F5bLIQCUb9gOw==');
+        $fm->logout();
+
+
+    }//.try()
+    catch (FileMakerException $e) {
+        $data['error'] = 'Não foi localizado nenhum registro até o momento.';
+        $data['message'] = $e->getMessage();
+        $data['code'] = $e->getCode();
+    }//.catch()
+
+
+} catch (FileMakerException $e) {
+    $data['error'] = "EXCEPTION";
+    $data['at'] = $e->getFile();
+    $data['line'] = $e->getLine();
+    $data['code'] = $e->getCode();
+    $data['message'] = $e->getMessage();
+    $data['stack'] = $e->getTraceAsString();
+} catch (Exception $e) {
+    $data['error'] = "EXCEPTION";
+    $data['at'] = $e->getFile();
+    $data['line'] = $e->getLine();
+    $data['code'] = $e->getCode();
+    $data['message'] = $e->getMessage();
+    $data['stack'] = $e->getTraceAsString();
 }
+
+
+echo json_encode($data);
 ```
