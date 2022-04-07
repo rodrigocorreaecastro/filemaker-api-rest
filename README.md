@@ -12,7 +12,7 @@ ou adicione:
 
     "airmoi/filemaker": "^2.2"
 
-para seu arquivo composer.json
+no seu arquivo composer.json
 
 ### Instalação manual
 
