@@ -1,5 +1,4 @@
-# filemaker-api-rest
-FileMaker API Rest PHP
+# FileMaker API Rest PHP
 
 
 ## Instalação
