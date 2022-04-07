@@ -1,6 +1,6 @@
 # FileMaker API Rest PHP
 
-[Repositório Oficial](https://github.com/airmoi)
+[Repositório Oficial](https://github.com/airmoi/FileMaker)
 
 ## Instalação
 
