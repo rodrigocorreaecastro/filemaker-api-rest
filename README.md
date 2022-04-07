@@ -28,7 +28,7 @@ require '/path/to/autoloader.php';
 ```
 *Esta etapa é facultativa se você estiver usando o compositor*
 
-STEP 2 : Criar uma instância do FileMaker
+PASSO 2 : Criar uma instância do FileMaker
 ```php
 use airmoi\FileMaker\FileMaker;
 
